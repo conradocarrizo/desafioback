@@ -1,9 +1,9 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from app.enums import InvoiceStatesEnum, PaymentTypesEnum, ServiceTypeEnum
+from app.enums import PayableStatesEnum, PaymentTypesEnum, ServiceTypeEnum
 
 
-class Invoice(models.Model):
+class Payable(models.Model):
 
     bar_code = models.AutoField(primary_key=True)
     service_type = models.CharField(max_length=20, choices=ServiceTypeEnum.choices())
@@ -15,23 +15,24 @@ class Invoice(models.Model):
         ]
     )
     states = models.ManyToManyField(
-        "InvoiceState", through="InvoiceStateHistory", related_name="invoice"
+        "PayableState", through="PayableStateHistory", related_name="payable"
     )
 
-    property
-
+    @property
     def state(self):
-        current_state = self.states.all().filter(is_active=True).first()
+        current_state = (
+            self.states.all().filter(payablestatehistory__is_active=True).first()
+        )
         return current_state
 
 
-class InvoiceState(models.Model):
-    name = models.CharField(max_length=20, choices=InvoiceStatesEnum.choices())
+class PayableState(models.Model):
+    name = models.CharField(max_length=20, choices=PayableStatesEnum.choices())
 
 
-class InvoiceStateHistory(models.Model):
-    invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT)
-    state = models.ForeignKey(InvoiceState, on_delete=models.PROTECT)
+class PayableStateHistory(models.Model):
+    payable = models.ForeignKey(Payable, on_delete=models.PROTECT)
+    state = models.ForeignKey(PayableState, on_delete=models.PROTECT)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -39,16 +40,16 @@ class InvoiceStateHistory(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=[
-                    "invoice",
+                    "payable",
                 ],
                 condition=models.Q(is_active=True),
-                name="uniq_invoice_state_active",
+                name="uniq_payable_state_active",
             )
         ]
 
 
-class Payment(models.Model):
-    invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT)
+class Transaction(models.Model):
+    payable = models.ForeignKey(Payable, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
 
     payment_method = models.CharField(max_length=20, choices=PaymentTypesEnum.choices())
@@ -76,8 +77,8 @@ class Payment(models.Model):
             ),
             models.UniqueConstraint(
                 fields=[
-                    "invoice",
+                    "payable",
                 ],
                 name="just_one_payment",
-            )
+            ),
         ]
