@@ -12,7 +12,7 @@ class ServiceTypeEnum(BaseEnum):
     LUZ = "luz"
 
 
-class InvoiceStatesEnum(BaseEnum):
+class PayableStatesEnum(BaseEnum):
 
     PAID = "paid"
     PENDING = "pending"
