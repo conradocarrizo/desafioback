@@ -24,8 +24,8 @@ los endpoint requieren Bearer Token que se puede obtener desde este endpoint
 POST /api/token/ 
 body = { username, password}
 response {
-	"refresh": "eyJhbGciOiJIUzI1Ni"
-    	"access": "eyJhbGciO"
+	"refresh": "eyJhbGciOiJIUzI1Ni",
+    "access": "eyJhbGciO",
 }
 
 
